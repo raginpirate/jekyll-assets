@@ -73,10 +73,10 @@ module Jekyll
       def self.copy(asset, ctx:, args:)
         env = ctx.registers[:site].sprockets
 
-        path = env.in_cache_dir("proxied")
+        path_name = Pathutil.new("proxied/" + asset.logical_path).sub_ext("").to_str + "-"
+        args[:proxy_output_id] ? path_name += args[:proxy_output_id] : path_name += digest(args)
         extname = File.extname(args[:argv1])
-        out = Pathutil.new(path).join(digest(args))
-          .sub_ext(extname)
+        out = Pathutil.new(env.in_cache_dir(path_name)).sub_ext(extname)
 
         unless out.file?
           out.dirname.mkdir_p

@@ -22,6 +22,7 @@ require_relative "hook"
 require_relative "tag"
 require_relative "url"
 require_all "compressors/*"
+require "pry"
 
 module Jekyll
   module Assets
@@ -56,6 +57,7 @@ module Jekyll
         ignore_caches!
         setup_drops!
         precompile!
+        preproxy!
         copy_raw!
 
         Hook.trigger :env, :after_init do |h|
@@ -130,20 +132,21 @@ module Jekyll
 
           next if skip
           h.update({
-            path.to_s => Drop.new(path, {
-              jekyll: jekyll,
-            }),
-          })
+                     path.to_s => Drop.new(path, {
+                       jekyll: jekyll,
+                     }),
+                   })
         end
       end
 
       # --
       def write_all
         remove_old_assets unless asset_config[:digest]
+        # what I need to do: give all except my specified assets a /assets front-load
         manifest.compile(*assets_to_write); @asset_to_write = []
         Hook.trigger(:env, :after_write) { |h| instance_eval(&h) }
         Logger.debug "took #{format(@total_time.round(2).to_s,
-          '%.2f')}s"
+                                    '%.2f')}s"
       end
 
       # ---
@@ -174,6 +177,7 @@ module Jekyll
       # --
       def copy_raw!
         raw_precompiles.each do |v|
+          binding.pry
           v[:dst].mkdir_p if v[:dst].extname.empty?
           v[:dst].parent.mkdir_p unless v[:dst].extname.empty?
           v[:src].cp(v[:dst])
@@ -189,7 +193,22 @@ module Jekyll
             @assets_to_write |= [sv]
           end
         end
+        nil
+      end
 
+      private
+      def preproxy!
+        assets = asset_config[:preproxy]
+        assets.map do |v|
+          args = {argv1: v[:src]}.merge(v[:args] || {}).deep_symbolize_keys
+          ctx = ::Liquid::Context.new(self, {}, {
+            site: @jekyll,
+          })
+          original = find_asset!(args[:argv1])
+          Default.set(args, ctx: ctx, asset: original)
+          out = Proxy.proxy(original, args: args, ctx: ctx)
+          Default.set(args, ctx: ctx, asset: out)
+        end
         nil
       end
 
@@ -212,6 +231,7 @@ module Jekyll
       private
       def setup_sources!
         source_dir, cwd = Pathutil.new(jekyll.in_source_dir), Pathutil.cwd
+        append_path(in_cache_dir("proxied"))
         asset_config["sources"].each do |v|
           path = source_dir.join(v).expand_path
           next unless path.in_path?(cwd)

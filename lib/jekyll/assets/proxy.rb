@@ -6,6 +6,7 @@ require "pathutil"
 require_relative "extensible"
 require_relative "hook"
 require "digest"
+require "pry"
 
 module Jekyll
   module Assets
@@ -56,9 +57,9 @@ module Jekyll
       def self.proxies_for(asset:, args:)
         Proxy.inherited.select do |o|
           o.for?({
-            type: asset.content_type,
-            args: args,
-          })
+                   type: asset.content_type,
+                   args: args,
+                 })
         end
       end
 
@@ -117,8 +118,4 @@ module Jekyll
       end
     end
   end
-end
-
-Jekyll::Assets::Hook.register :env, :after_init do
-  append_path(in_cache_dir("proxied"))
 end

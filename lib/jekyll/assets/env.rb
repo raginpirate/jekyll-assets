@@ -196,11 +196,11 @@ module Jekyll
       private
       def preproxy!
         assets = asset_config[:preproxy]
+        ctx = ::Liquid::Context.new(self, {}, {
+          site: @jekyll,
+        })
         assets.map do |v|
           args = {argv1: v[:src]}.merge(v[:args] || {}).deep_symbolize_keys
-          ctx = ::Liquid::Context.new(self, {}, {
-            site: @jekyll,
-          })
           original = find_asset!(args[:argv1])
           Default.set(args, ctx: ctx, asset: original)
           out = Proxy.proxy(original, args: args, ctx: ctx)

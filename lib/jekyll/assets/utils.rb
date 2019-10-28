@@ -62,8 +62,8 @@ module Jekyll
       def raw_precompiles
         asset_config[:raw_precompile].each_with_object([]) do |v, a|
           if v.is_a?(Hash)
-            dst = v[:dst].start_with? "/" ? in_root_dir(v[:dst]) : in_dest_dir(v[:dst])
-            dst, src = dst.tap(&:mkdir_p), v[:src]
+            dst = v[:dst].start_with?("/") ? in_root_dir(v[:dst]) : in_dest_dir(v[:dst])
+            src = v[:src]
             glob_paths(src).each do |sv|
               a << {
                 src: sv,
@@ -75,8 +75,7 @@ module Jekyll
             glob_paths(v).each do |p|
               next unless p
 
-              dst = p.start_with? "/" ? in_root_dir(strip_paths(p)) : in_dest_dir(strip_paths(p))
-              dst.parent.mkdir_p
+              dst = p.start_with?("/") ? in_root_dir(strip_paths(p)) : in_dest_dir(strip_paths(p))
 
               a << {
                 src: p,
@@ -234,21 +233,6 @@ module Jekyll
       end
 
       # --
-      # Lands your path inside of the jekyll build destination.
-      # @param [Array<String>] paths the paths.
-      # @return [String]
-      # --
-      module_function
-      def in_root_dir(*paths)
-        destination = strip_slashes(jekyll.config["destination"])
-
-        paths.unshift(destination)
-        paths = paths.flatten.compact
-        Pathutil.new(jekyll
-           .in_root_dir(*paths))
-      end
-
-      # --
       # @param [String] the path.
       # @note this should only be used for *urls*
       # rubocop:disable Metrics/CyclomaticComplexity
@@ -340,6 +324,11 @@ module Jekyll
         end
 
         out
+      end
+
+      def in_root_dir(*paths)
+        paths = paths.flatten.compact
+        Pathutil.new(jekyll.in_dest_dir(*paths))
       end
 
       # --

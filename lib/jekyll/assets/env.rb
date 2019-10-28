@@ -177,7 +177,6 @@ module Jekyll
       # --
       def copy_raw!
         raw_precompiles.each do |v|
-          binding.pry
           v[:dst].mkdir_p if v[:dst].extname.empty?
           v[:dst].parent.mkdir_p unless v[:dst].extname.empty?
           v[:src].cp(v[:dst])

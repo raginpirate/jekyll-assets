@@ -22,7 +22,6 @@ require_relative "hook"
 require_relative "tag"
 require_relative "url"
 require_all "compressors/*"
-require "pry"
 
 module Jekyll
   module Assets
@@ -132,10 +131,10 @@ module Jekyll
 
           next if skip
           h.update({
-                     path.to_s => Drop.new(path, {
-                       jekyll: jekyll,
-                     }),
-                   })
+             path.to_s => Drop.new(path, {
+               jekyll: jekyll,
+             }),
+           })
         end
       end
 
@@ -146,7 +145,7 @@ module Jekyll
         manifest.compile(*assets_to_write); @asset_to_write = []
         Hook.trigger(:env, :after_write) { |h| instance_eval(&h) }
         Logger.debug "took #{format(@total_time.round(2).to_s,
-                                    '%.2f')}s"
+    '%.2f')}s"
       end
 
       # ---
@@ -192,7 +191,6 @@ module Jekyll
             @assets_to_write |= [sv]
           end
         end
-        nil
       end
 
       private

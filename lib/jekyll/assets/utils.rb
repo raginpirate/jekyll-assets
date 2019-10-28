@@ -233,6 +233,16 @@ module Jekyll
       end
 
       # --
+      # Lands your path inside of the root jekyll destination directory.
+      # @param [Array<String>] paths the paths.
+      # @return [Pathutil]
+      # --
+      def in_root_dir(*paths)
+        paths = paths.flatten.compact
+        Pathutil.new(jekyll.in_dest_dir(*paths))
+      end
+
+      # --
       # @param [String] the path.
       # @note this should only be used for *urls*
       # rubocop:disable Metrics/CyclomaticComplexity
@@ -324,11 +334,6 @@ module Jekyll
         end
 
         out
-      end
-
-      def in_root_dir(*paths)
-        paths = paths.flatten.compact
-        Pathutil.new(jekyll.in_dest_dir(*paths))
       end
 
       # --

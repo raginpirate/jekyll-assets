@@ -56,9 +56,9 @@ module Jekyll
       def self.proxies_for(asset:, args:)
         Proxy.inherited.select do |o|
           o.for?({
-             type: asset.content_type,
-             args: args,
-           })
+            type: asset.content_type,
+            args: args,
+          })
         end
       end
 

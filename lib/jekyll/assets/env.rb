@@ -131,21 +131,20 @@ module Jekyll
 
           next if skip
           h.update({
-             path.to_s => Drop.new(path, {
-               jekyll: jekyll,
-             }),
-           })
+            path.to_s => Drop.new(path, {
+              jekyll: jekyll,
+            }),
+          })
         end
       end
 
       # --
       def write_all
         remove_old_assets unless asset_config[:digest]
-        # what I need to do: give all except my specified assets a /assets front-load
         manifest.compile(*assets_to_write); @asset_to_write = []
         Hook.trigger(:env, :after_write) { |h| instance_eval(&h) }
         Logger.debug "took #{format(@total_time.round(2).to_s,
-    '%.2f')}s"
+          '%.2f')}s"
       end
 
       # ---
@@ -191,6 +190,7 @@ module Jekyll
             @assets_to_write |= [sv]
           end
         end
+        nil
       end
 
       private

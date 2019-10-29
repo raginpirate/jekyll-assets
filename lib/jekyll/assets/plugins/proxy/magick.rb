@@ -19,9 +19,8 @@ module Jekyll
 
         def process
           img = ::MiniMagick::Image.new(@file)
-          magick_format(img) if @args[:magick][:format]
           img.combine_options do |c|
-            @args[:magick].keys.reject { |k| k == :format }.each do |k|
+            @args[:magick].keys.reject { |k| k == :format || k == :define }.each do |k|
               m = "magick_#{k}"
 
               if respond_to?(m, true)
@@ -29,6 +28,7 @@ module Jekyll
               end
             end
           end
+          magick_format(img) if @args[:magick][:format]
 
           @file
         ensure
@@ -37,7 +37,7 @@ module Jekyll
 
         def runners
           private_methods(true).select do |v|
-            v =~ %r!^magick_! && v != :magick_format
+            v =~ %r!^magick_! && v != :magick_format && v != :magick_define
           end
         end
 
@@ -49,7 +49,9 @@ module Jekyll
 
           ext, type = ext
           raise SameType, type if type == asset.content_type
-          img.format(ext.sub(".", ""))
+          img.format(ext.sub(".", "")) do |convert|
+            convert.define(@args[:magick][:define]) if @args[:magick][:define]
+          end
         end
 
         private
